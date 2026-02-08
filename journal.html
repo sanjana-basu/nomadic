@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NOMADIC — Journal Dashboard</title>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
+
+        :root {
+            --bg: #050505;
+            --accent: #818cf8;
+            --glass: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --text-main: #ffffff;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            overflow: hidden; /* Prevents whole page scroll to favor column scroll */
+            height: 100vh;
+            /* Fading photo backdrop */
+            background: 
+                linear-gradient(to bottom, rgba(5,5,5,0.7) 0%, var(--bg) 80%),
+                url('https://images.unsplash.com/photo-1473116763249-2faaef81ccda?auto=format&fit=crop&w=1920&q=80') center center no-repeat;
+            background-size: cover;
+        }
+
+        /* --- NAVBAR --- */
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 2rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(to bottom, rgba(5,5,5,0.9), transparent);
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .logo {
+            font-weight: 800;
+            font-size: 1.2rem;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: white;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 40px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: white;
+            opacity: 0.6;
+            text-decoration: none;
+        }
+
+        /* --- MAIN DASHBOARD CONTAINER --- */
+        .dashboard-container {
+            margin-top: 100px;
+            height: calc(100vh - 100px);
+            display: flex;
+            flex-direction: column;
+            padding: 0 5%;
+        }
+
+        .dashboard-header {
+            padding: 20px 0;
+        }
+
+        .dashboard-header h1 { font-size: 2rem; font-weight: 800; }
+
+        /* --- BENTO COLUMNS --- */
+        .bento-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            flex: 1;
+            min-height: 0; /* Important for child scroll */
+            margin-bottom: 30px;
+        }
+
+        .column {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .column-header {
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .column-header h2 {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-muted);
+        }
+
+        .scroll-area {
+            overflow-y: auto;
+            padding-right: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* Custom Scrollbar */
+        .scroll-area::-webkit-scrollbar { width: 4px; }
+        .scroll-area::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 10px; }
+
+        /* --- CARDS (Netflix Hover) --- */
+        .card {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            display: flex;
+            gap: 20px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+
+        .card:hover {
+            transform: scale(1.02);
+            border-color: var(--accent);
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .card img {
+            width: 100px;
+            height: 100px;
+            border-radius: 10px;
+            object-fit: cover;
+            opacity: 0.8;
+        }
+
+        .card:hover img { opacity: 1; }
+
+        .card-info h3 { font-size: 1.1rem; margin-bottom: 4px; }
+        .card-info p { font-size: 0.75rem; color: var(--text-muted); }
+
+        /* --- ELABORATE STATS (Sound Capsule Style) --- */
+        .stats-capsule {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 25px 40px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(20px);
+        }
+
+        .stat-box {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .stat-label {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+        }
+
+        /* Progress Bar (Spotify style) */
+        .stat-progress {
+            width: 100%;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent);
+            border-radius: 2px;
+        }
+
+        @media (max-width: 900px) {
+            .bento-row { grid-template-columns: 1fr; }
+            body { overflow: auto; height: auto; }
+            .scroll-area { overflow: visible; }
+        }
+    </style>
+</head>
+
+<body>
+
+<nav class="navbar">
+    <a href="#" class="logo">Nomadic.</a>
+    <ul class="nav-links">
+        <li><a href="#">Journal</a></li>
+        <li><a href="#">Destinations</a></li>
+        <li><a href="#">Explore</a></li>
+    </ul>
+</nav>
+
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1>Global Journal</h1>
+    </div>
+
+    <div class="bento-row">
+        <div class="column">
+            <div class="column-header">
+                <h2>Bucket List</h2>
+            </div>
+            <div class="scroll-area">
+                <div class="card">
+                    <img src="https://images.unsplash.com/photo-1531310197839-ccf54634509e?auto=format&fit=crop&w=200">
+                    <div class="card-info">
+                        <h3>Patagonia, Chile</h3>
+                        <p>Southern Frontier · Planning Phase</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <img src="https://images.unsplash.com/photo-1520175480921-4edfa0683001?auto=format&fit=crop&w=200">
+                    <div class="card-info">
+                        <h3>Reykjavík, Iceland</h3>
+                        <p>Arctic Vibe · Winter 2026</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <img src="https://images.unsplash.com/photo-1548115184-bc6544d06a58?auto=format&fit=crop&w=200">
+                    <div class="card-info">
+                        <h3>Petra, Jordan</h3>
+                        <p>Ancient History · Desert Trek</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="column">
+            <div class="column-header">
+                <h2>Visited Diaries</h2>
+            </div>
+            <div class="scroll-area">
+                <div class="card">
+                    <img src="https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=200">
+                    <div class="card-info">
+                        <h3>Kyoto, Japan</h3>
+                        <p>Oct 2024 · Completed</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <img src="https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=200">
+                    <div class="card-info">
+                        <h3>Paris, France</h3>
+                        <p>May 2023 · Completed</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <img src="https://images.unsplash.com/photo-1539037116277-4db20889f2d4?auto=format&fit=crop&w=200">
+                    <div class="card-info">
+                        <h3>Madrid, Spain</h3>
+                        <p>Aug 2022 · Completed</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="stats-capsule">
+        <div class="stat-box">
+            <span class="stat-label">Exploration Progress</span>
+            <span class="stat-value">12.5%</span>
+            <div class="stat-progress"><div class="progress-fill" style="width: 12.5%;"></div></div>
+        </div>
+        <div class="stat-box">
+            <span class="stat-label">Cities Conquered</span>
+            <span class="stat-value">14</span>
+            <span style="font-size: 0.6rem; color: var(--accent);">+2 this year</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-label">Top Genre</span>
+            <span class="stat-value">Alpine</span>
+            <div class="stat-progress"><div class="progress-fill" style="width: 80%; background: #4ade80;"></div></div>
+        </div>
+        <div class="stat-box">
+            <span class="stat-label">Passport Stamps</span>
+            <span class="stat-value">08</span>
+            <span style="font-size: 0.6rem; color: var(--text-muted);">Silver Tier Member</span>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
